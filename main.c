@@ -28,8 +28,6 @@ int modbus_read_device(modbus_t *ctx, int device_address, int register_address, 
 int main() {
     modbus_t *ctx;
     uint16_t tab_reg[64];
-    int rc;
-    int i;
 
     ctx = modbus_new_rtu("\\\\.\\COM22", 4800, 'N', 8, 1);
     if (ctx == NULL) {
