@@ -1,10 +1,10 @@
 #include <stdio.h>
 #include <modbus.h>
-#include <stdbool.h>
 #include <stdint.h>
+#include <errno.h>
 
-
-int modbus_read_device(modbus_t *ctx, int device_address, int register_address, int number_of_register, uint16_t *result) {
+int
+modbus_read_device(modbus_t *ctx, int device_address, int register_address, int number_of_register, uint16_t *result) {
     if (modbus_connect(ctx) == -1) {
         fprintf(stderr, "Connection failed: %s\n", modbus_strerror(errno));
         modbus_free(ctx);
@@ -26,10 +26,12 @@ int modbus_read_device(modbus_t *ctx, int device_address, int register_address, 
 }
 
 int main() {
-    modbus_t *ctx;
+    modbus_t *ctx = NULL;
     uint16_t tab_reg[64];
 
-    ctx = modbus_new_rtu("\\\\.\\COM22", 4800, 'N', 8, 1);
+    //ctx = modbus_new_rtu("\\\\.\\COM22", 4800, 'N', 8, 1);
+    ctx = modbus_new_rtu("/dev/ttyUSB0", 4800, 'N', 8, 1);
+
     if (ctx == NULL) {
         fprintf(stderr, "Unable to create the libmodbus context\n");
         return -1;
@@ -37,23 +39,24 @@ int main() {
 
     modbus_set_debug(ctx, TRUE);
 
-    uint32_t old_response_to_sec;
-    uint32_t old_response_to_usec;
+//    uint32_t old_response_to_sec;
+//    uint32_t old_response_to_usec;
 
-    /* Save original timeout */
-    modbus_get_response_timeout(ctx, &old_response_to_sec, &old_response_to_usec);
-    printf("old_response_to_sec: %u\nold_response_to_usec: %u\n",
-            old_response_to_sec, old_response_to_usec);
-
-    /* Define a new timeout of 200ms */
-    modbus_set_response_timeout(ctx, 0, 200000);
+//    /* Save original timeout */
+//    modbus_get_response_timeout(ctx, &old_response_to_sec, &old_response_to_usec);
+//    printf("old_response_to_sec: %u\nold_response_to_usec: %u\n",
+//            old_response_to_sec, old_response_to_usec);
+//
+//    /* Define a new timeout of 200ms */
+//    modbus_set_response_timeout(ctx, 0, 200000);
 
     //temperature, humidity, co2
-    modbus_read_device(ctx,1,0,3,tab_reg);
+    modbus_read_device(ctx, 1, 0, 3, tab_reg);
 
     //0-200000Lux light sensor
-    modbus_read_device(ctx,2,2,2,tab_reg);
+    modbus_read_device(ctx, 2, 2, 2, tab_reg);
 
     modbus_free(ctx);
+
     return 0;
 }
