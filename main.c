@@ -2,6 +2,7 @@
 #include <modbus.h>
 #include <stdint.h>
 #include <errno.h>
+#include "windows.h"
 
 int
 modbus_read_device(modbus_t *ctx, int device_address, int register_address, int number_of_register, uint16_t *result) {
@@ -16,6 +17,7 @@ modbus_read_device(modbus_t *ctx, int device_address, int register_address, int 
     rc = modbus_read_registers(ctx, register_address, number_of_register, result);
     if (rc == -1) {
         fprintf(stderr, "%s\n", modbus_strerror(errno));
+        modbus_close(ctx);
         return -1;
     }
     for (i = 0; i < rc; i++) {
@@ -29,8 +31,8 @@ int main() {
     modbus_t *ctx = NULL;
     uint16_t tab_reg[64];
 
-    //ctx = modbus_new_rtu("\\\\.\\COM22", 4800, 'N', 8, 1);
-    ctx = modbus_new_rtu("/dev/ttyUSB0", 4800, 'N', 8, 1);
+    ctx = modbus_new_rtu("\\\\.\\COM22", 4800, 'N', 8, 1);
+    //ctx = modbus_new_rtu("/dev/ttyUSB0", 4800, 'N', 8, 1);
 
     if (ctx == NULL) {
         fprintf(stderr, "Unable to create the libmodbus context\n");
@@ -51,10 +53,16 @@ int main() {
 //    modbus_set_response_timeout(ctx, 0, 200000);
 
     //temperature, humidity, co2
-    modbus_read_device(ctx, 1, 0, 3, tab_reg);
+    //modbus_read_device(ctx, 1, 0, 3, tab_reg);
 
     //0-200000Lux light sensor
-    modbus_read_device(ctx, 2, 2, 2, tab_reg);
+    //modbus_read_device(ctx, 2, 2, 2, tab_reg);
+
+    //Arduino Random Data
+    for (int i = 0; i < 10000; ++i) {
+        modbus_read_device(ctx, 10, 1, 1, tab_reg);
+        Sleep(50);
+    }
 
     modbus_free(ctx);
 
